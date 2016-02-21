@@ -267,7 +267,9 @@ if plot_set{1} == 1
     if strcmp(imagetype,'side_fk_4'), subplot(3,4,12); imshow(rawdata(:,:,4),range2);set(gca,'YDir','normal'); title('Dark 2'); end
     if strcmp(crop_set{1},'rect') || strcmp(crop_set{1},'ellipse')
         subplot(3,4,[3,4,7,8]); imshow(data.od2,[0,max(data.od2(:))]);set(gca,'YDir','normal'); title('Cropped OD');
-        subplot(3,4,[2,6]); hold on; rectangle('Position', rect, 'EdgeColor','red'); rectangle('Position', rect2, 'EdgeColor','blue'); hold off;    
+        subplot(3,4,[2,6]); hold on; rectangle('Position', rect, 'EdgeColor','red'); 
+        if strcmp(bg_set{1},'avg'), rectangle('Position', rect2, 'EdgeColor','blue'); end 
+        hold off;    
     end
     
 end
