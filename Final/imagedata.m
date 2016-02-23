@@ -145,7 +145,7 @@ for i = 1:length(pcdatabase.(pcname).minor_paths)
     for j = 1:1:length(subfolders)
         if ~filefound && exist(fullfile(pcdatabase.(pcname).minor_paths{i},subfolders{j},filename),'file')
             filefound = 1;
-            filename = fullfile(pcdatabase.(pcname).minor_paths{i},filename);
+            filename = fullfile(pcdatabase.(pcname).minor_paths{i},subfolders{j},filename);
             break;            
         end
     end
