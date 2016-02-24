@@ -120,7 +120,8 @@ imdatestr = regexp(filename,'\d\d-\d\d-\d\d\d\d','match');
 imdatenum = datenum(imdatestr,'mm-dd-yyyy');
 subpaths = cell(12,1);
 subpaths{1} = fullfile(datestr(imdatenum,'yyyy'),datestr(imdatenum,'yyyy-mm'),datestr(imdatenum,'yyyy-mm-dd'));
-for i = 1:11, subpaths{i+1} = fullfile(datestr(imdatenum+i-6,'yyyy'),datestr(imdatenum+i-4,'yyyy-mm'),datestr(imdatenum+i-4,'yyyy-mm-dd')); end
+subpaths{2} = fullfile(datestr(imdatenum+1,'yyyy'),datestr(imdatenum+1,'yyyy-mm'),datestr(imdatenum+1,'yyyy-mm-dd'));
+subpaths{3} = fullfile(datestr(imdatenum-1,'yyyy'),datestr(imdatenum-1,'yyyy-mm'),datestr(imdatenum-1,'yyyy-mm-dd'));
 
 % Search for image on master_paths
 for i = 1:length(pcdatabase.(pcname).master_paths)
