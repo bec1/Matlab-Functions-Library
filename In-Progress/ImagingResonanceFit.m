@@ -34,8 +34,8 @@ figure( 'Name', 'untitled fit 1' );
 h = plot( fitresult, xData, yData );
 legend( h, 'atoms vs. imgfreqs', 'untitled fit 1', 'Location', 'NorthEast' );
 % Label axes
-xlabel imgfreqs
-ylabel atoms
+xlabel ('Freq MHz');
+ylabel('sum(OD)');
 grid on
 title(['Resonance fit with center freq: ', num2str(fitresult.x0)]);
 

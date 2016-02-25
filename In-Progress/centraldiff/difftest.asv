@@ -1,0 +1,19 @@
+function difftest(noiseamp)
+points = -10:.1:10;
+sindata = sin(points);
+cosdata = cos(points);
+
+sindatanoisy = sin(points) -noiseamp/2 + noiseamp*rand([1 length(points)]);
+
+figure;
+subplot(2,1,1)
+plot(points,sindata); hold all
+plot(points,sindatanoisy)
+title('data')
+
+subplot(2,1,2)
+plot(points,cosdata); hold all
+plot(points,centraldiff(points,sindata));
+
+
+end

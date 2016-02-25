@@ -1,0 +1,32 @@
+function diffout = polydiff(points,data,varargin)
+
+switch nargin
+    case 2
+        range = 5;
+        degree = 2;
+    case 3
+        range = varargin{1};
+        degree = 2;
+    case 4 
+        range = varargin{1};
+        degree = varargin{2};
+end
+
+if(length(data) ~= length(points))
+    msgbox('Please enter data of equal lengths')
+end
+
+data = reshape(data,[1 length(data)]);
+points = reshape(points, [1 length(data)]);
+
+N = length(data);
+
+for i=1:N
+    k1=max(1,i-range);
+    k2=min(N,i+range);
+    points=V(k1:k2);EFf=EF(k1:k2);
+    %Do a 2nd-ord polynomial fitting
+    p=polyfit(Vf,EFf,1);
+    q=polyder(p);
+    Kappat(i)=-polyval(q,V(i));
+end
