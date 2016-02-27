@@ -24,13 +24,31 @@ function [ data, rawdata ] = imagedata( filename, varargin )
 %       imagetype : top, side_n, side_fk_3, side_fk_4
 % 
 % Procedure
-%
-%
-%
-%
+%   Finding the image path 
+%       Check if it has already been provided -> yes, then skip search
+%                                             -> no, find in major then minor paths
+%       If it cannot be found, throw an error.
+% 
+%   Load raw fits image
+%       If it contains '(' then copy to temporary file, load image, and
+%       delete temporary file.
+% 
+%   Further analysis
+%       Image type -> figure out if it is a top, side (normal, fk3, fk4) or defringed image 
+%       Remove dark count -> if fk4 using both dark
+%                         -> if defringed, no modification is needed
+%       Absorption image by simply dividing WithAtoms/WithoutAtoms 
+%       Fix absorption -> since we need -log(abs) to be real, values of abs must be within 0 < abs < inf
+%                      -> For points that don't satisfy this condition, try to fix them by taking an average of the neighbors.
+%                      -> and if taking average doesn't fix the problem, set abs to 1 (i.e. OD -> 0)
+%       OD by simply taking -log(abs2) where abs2 stands for the fixed absorption
+%       Cropping -> Crop the image with provided type (none, rect, ellipse). 
+%                -> If none, do not crop the image. 
+%                -> Store cropped image as od2.
+% 
 % Last Edits
 %   Parth 2/20/2016 : Version 1.0 finished
-%   
+%   Parth 2/26/2016 : Version 1.1 - can read defringed files, added visualization for bad points.
 
 %% Database of computers
 % WARMING! Pc name MUST be a valid variable name. Use the following code to determine your pc name
@@ -70,6 +88,8 @@ pcdatabase.ParthPatel.minor_paths = {'C:\Users\Parth Patel\Downloads';...
                                      'C:\Users\Parth Patel\Documents';...
                                      'C:\Users\Parth Patel\Desktop'};
 pcdatabase.ParthPatel.snippet_path = 'D:\Dropbox Sync\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images\Snippet_output';
+
+% 
 
 %% Constants, variables and inputs
 % Universal constants
@@ -177,7 +197,12 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Determine image type
-if strcmp(filename(end-7:end-5),'top'), imagetype = 'top'; else imagetype = 'side'; end
+[~,fname] = fileparts(filename);
+if ~isempty(strfind(fname,'top')), imagetype = 'top';
+elseif ~isempty(strfind(fname,'defringed')), imagetype = 'defringed';
+else imagetype = 'side';
+end
+
 if strcmp(imagetype,'side')
     if size(rawdata,3) < 3, imagetype = 'unknown'; warning('This is NOT a standard absorption image. It has less than 3 layers of data. Use only the rawdata output.');
     elseif size(rawdata,3) == 3, imagetype = [imagetype, '_n'];
@@ -204,6 +229,7 @@ data.abs2 = data.abs;
 
 % data.absorption should be within (0,inf), NOT (-inf,0]
 badpts = data.abs <= 0 | data.abs == Inf | isnan(data.abs);
+verybadpts = zeros(size(data.abs));
 data.badpts = sum(badpts(:));
 data.badpts2 = 0;
 l1 = size(data.abs,1); l2 = size(data.abs,2);
@@ -214,7 +240,7 @@ for i = 1:l1
             data.abs2(i,j) = mean(mean( data.abs(max(1,i-l3):min(l1,i+l3),max(1,j-l3):min(l2,j+l3)) ,'omitnan'),'omitnan');
             while data.abs2(i,j) <= 0 || data.abs2(i,j) == Inf || isnan(data.abs2(i,j))
                 l3 = l3 + 1; data.abs2(i,j) = mean(mean( data.abs(max(1,i-l3):min(l1,i+l3),max(1,j-l3):min(l2,j+l3)) ,'omitnan'),'omitnan');
-                if l3 > 10, data.abs2(i,j) = 1; data.badpts2 = data.badpts2+1; end
+                if l3 > 4, data.abs2(i,j) = 1; data.badpts2 = data.badpts2+1; verybadpts(i,j) = 1; end
             end
         end
     end
@@ -271,7 +297,9 @@ if plot_set{1} == 1
     subplot(3,4,[2,6]); imshow(data.od,[0,max(data.od(:))]);set(gca,'YDir','normal'); title('OD');
     subplot(3,4,9); imshow(data.wa,range1);set(gca,'YDir','normal'); title('With Atoms');
     subplot(3,4,10); imshow(data.woa,range1);set(gca,'YDir','normal'); title('Without Atoms');
-    subplot(3,4,11); imshow(rawdata(:,:,3),range2);set(gca,'YDir','normal'); title('Dark 1');
+    if strcmp(imagetype,'top') || strcmp(imagetype,'side_n') || strcmp(imagetype,'side_fk_3') || strcmp(imagetype,'side_fk_4')
+        subplot(3,4,11); imshow(rawdata(:,:,3),range2);set(gca,'YDir','normal'); title('Dark 1');
+    end
     if strcmp(imagetype,'side_fk_4'), subplot(3,4,12); imshow(rawdata(:,:,4),range2);set(gca,'YDir','normal'); title('Dark 2'); end
     if strcmp(crop_set{1},'rect') || strcmp(crop_set{1},'ellipse')
         subplot(3,4,[3,4,7,8]); imshow(data.od2,[0,max(data.od2(:))]);set(gca,'YDir','normal'); title('Cropped OD');
@@ -279,6 +307,17 @@ if plot_set{1} == 1
         if strcmp(bg_set{1},'avg'), rectangle('Position', rect2, 'EdgeColor','blue'); end 
         hold off;    
     end
+    % Drawing bad points
+
+    [row, col] = find(badpts);
+    subplot(3,4,[2,6]); hold on;
+    if ~isempty(row), plot(col, row, 'g.','MarkerSize',5); end
+    hold off;
+    
+    [row, col] = find(verybadpts);
+    subplot(3,4,[2,6]); hold on;
+    if ~isempty(row), plot(col, row, 'r.','MarkerSize',5); end
+    hold off;
     
 end
 
