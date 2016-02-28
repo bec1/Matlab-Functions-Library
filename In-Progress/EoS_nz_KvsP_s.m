@@ -25,23 +25,19 @@ uconst.massLi6 = 9.988346e-27;
 econst.trapw = 2*pi*23.9;
 
 % Other variables
-total_bins = 40;
-create_plot = 1;
-plot_maxU = 2; % kHz
-U_i = [];
-Urange = [];
-diffsize = 4;
+bindz = 0.5;
+methods = {'sum','diff',0, 2}; % {sum or trapz or simps, diff or poly, length and order for poly}
+plotset = {1,1, 3, 50}; % {?main with k and P, ?technical details plot, U max (kHz), z max (um) }
+Urange = [0.1 3];
 
 % Process inputs
 for i = 1:2:length(varargin)
     switch varargin{i}
-        case 'bins', total_bins = varargin{i+1};
         case 'trap omega', econst.trapw = varargin{i+1};
-        case 'plot', create_plot = varargin{i+1};
-        case 'plot_maxU', plot_maxU = varargin{i+1};
-        case 'UkHz', U_i = varargin{i+1};
+        case 'plot', plotset = varargin{i+1};
         case 'Urange', Urange = varargin{i+1};
-        case 'diffsize', diffsize = varargin{i+1};
+        case 'bins', bindz = varargin{i+1};
+        case 'methods', methods = varargin{i+1};
     end
 end
 
@@ -51,29 +47,59 @@ end
 U_z = 0.5*uconst.massLi6*econst.trapw^2*z_i.^2;
 
 % Sort n_z and U_z in increasing U_z with variable names U_i and n_U
-[U_i, Index] = sort(U_z);
-n_U = n_z(Index);
+[sU_z, sIndex] = sort(U_z);
+sn_z = n_z(sIndex);
+sz_i = z_i(sIndex);
+
+% Dynamic Binning
+U_i = zeros(size(sU_z));
+n_U = zeros(size(sU_z));
+z_U = zeros(size(sU_z));
+dz = z_i(2) - z_i(1);
+bindz = 0.5;
+
+i=1; binIndex = 1;
+while i<=length(sU_z)
+    members = [i];
+    j = i+1;
+    while j<=length(sU_z) && (abs(sz_i(j))-abs(sz_i(i))) < (dz*bindz)
+        members = [members, j]; j = j+1;
+    end
+    U_i(binIndex) = mean(sU_z(members));
+    n_U(binIndex) = mean(sn_z(members));
+    z_U(binIndex) = mean(abs(sz_i(members)));
+    i = j; binIndex = binIndex + 1;
+end
+U_i = U_i(1:binIndex-1);
+n_U = n_U(1:binIndex-1);
+z_U = z_U(1:binIndex-1);
+
+% Calculate fermi energy
 EF_U = real(uconst.hbar^2 / (2*uconst.massLi6) * (6*pi^2*n_U).^(2/3));
 
-% Calculate P/P0 and k/k0. Make them 1 length shorter than U_i and EF_U.
-P_U = zeros(length(EF_U)-1,1);
-k_U = zeros(length(EF_U)-1,1);
+% Calculate P/P0 and k/k0.
+P_U = zeros(size(EF_U));
+k_U = zeros(size(EF_U));
 
 % Calculate P_U
-% for i = 1:length(P_U), P_U(i) = trapz(U_i(i:end),n_U(i:end)); end
-for i = 1:length(P_U), P_U(i) = sum(n_U(i:end))*(U_i(2)-U_i(1)); end
-P_U = P_U ./ (2/5*n_U(1:end-1).*EF_U(1:end-1)) ;
+switch methods{1}
+    case 'sum', for i = 2:length(P)-1, for j = i:length(U_i)-1, P(i) = P(i) + (U_i(j+1)-U_i(j))*n_U(j); end; end
+    case 'trapz', for i = 2:length(P)-1, P(i) = trapz(U_i(i:end),n_U(i:end)); end
+    case 'simps', for i = 2:length(P)-1, P(i) = simps(U_i(i:end),n_U(i:end)); end
+end
+P = P ./ (2/5*n_U.*EF_U);
+P = P(2:end-1); 
 
 % Calculate k_U
-k_U = - diff(EF_U) / (U_i(2)-U_i(1));
-
-if diffsize ~= 0
-    warning('off','MATLAB:polyfit:RepeatedPointsOrRescale');
-    for i = 1:length(k_U)
-        t = diffsize;
-        p = polyfit(U_i(max(1,i-t):min(length(U_i),i+t)), EF_U(max(1,i-t):min(length(U_i),i+t)), 2);
-        k_U(i) = - polyval(polyder(p),U_i(i));
-    end
+switch methods{2}
+    case 'diff', k_U(1:end-1) = - diff(EF_U) / (U_i(2)-U_i(1));
+    case 'poly' 
+        warning('off','MATLAB:polyfit:RepeatedPointsOrRescale');
+        for i = 2:length(k_U)-1
+            t = methods{3};
+            p = polyfit(U_i(max(1,i-t):min(length(U_i),i+t)), EF_U(max(1,i-t):min(length(U_i),i+t)), methods{4});
+            k_U(i) = - polyval(polyder(p),U_i(i));
+        end
 end
 
 % Limit the range of U for P_U and k_U
@@ -87,7 +113,7 @@ else
 end
 
 %% Figure
-if create_plot
+if plotset{1}
     figure;
     subplot(2,2,1);
     grid on; title('Density and Potential vs z');  xlim([z_i(1),z_i(end)]*1e6); xlabel('z (\mum)');
@@ -97,14 +123,14 @@ if create_plot
     plot(z_i*1e6,U_z/(uconst.h*1e3),'.'); ylabel('U (kHz)');
 
     subplot(2,2,2);
-    grid on;  title('Density and Fermi energy vs U'); xlabel('U (kHz)'); xlim([0,plot_maxU]); 
+    grid on;  title('Density and Fermi energy vs U'); xlabel('U (kHz)'); xlim([0,plotset{3}]); 
     yyaxis left
     plot(U_i/(uconst.h*1e3),n_U,'.');  ylabel('n (m^{-3})');
     yyaxis right
     plot(U_i/(uconst.h*1e3),EF_U/(uconst.h*1e3),'.');  ylabel('E_F (kHz)');
 
     subplot(2,2,3);
-    grid on;  title('Compressibility and Pressure vs U');  xlabel('U (kHz)'); xlim([0,plot_maxU]);
+    grid on;  title('Compressibility and Pressure vs U');  xlabel('U (kHz)'); xlim([0,plotset{3}]);
     yyaxis left
     plot(U_i(1:end-1)/(uconst.h*1e3),k_U,'.'); ylim([0 5]);  ylabel('\kappa / \kappa_0');
     yyaxis right
@@ -115,6 +141,16 @@ if create_plot
     title('\kappa / \kappa_0 vs P / P_0'); xlabel('P / P_0'); ylabel('\kappa / \kappa_0'); grid on;
 end
 
+if plotset{2}
+    figure;
+    
+    subplot(2,2,1);
+    grid on; title('Dynamic Binning'); xlim([0 plotset{4}]); xlabel('z [\mum]');
+    yyaxis left
+    plot()
+    plot(sU_z/(uconst.h*1e3), sn_z, 'r.', bU/(uconst.h*1e3), bn, 'bo'); xlim([0 plot_maxU]);
+    
+end
 
 end
 
