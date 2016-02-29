@@ -22,10 +22,13 @@ omega_y = 2*pi * 23.9;
 % y_vec_micron = -200:0.1:200;
 
 % make plots
-makeplot = [0 0];
+makeplot = {0,0,0};
 
 % Signal 2 Noise
 s2n = 50;
+
+% Shot noise ncount
+Ncount = 500;
 
 % physical constants
 hbar = 1.0545718*10^(-34);
@@ -41,6 +44,7 @@ for i = 1:2:length(varargin)
         case 'plot', makeplot = varargin{i+1};
         case 'n0', n0 = varargin{i+1};
         case 's2n', s2n = varargin{i+1};
+        case 'Ncount', Ncount = varargin{i+1};
     end
 end
 
@@ -72,8 +76,8 @@ Z_simulated = exp(mu_simulated/(kB*TAbsolut));
 %% simulated density distribution
 n_simulated = (mLi*kB*TAbsolut/(2*pi*hbar^2))^(3/2)*(-PolyLogFrac(3/2,-Z_simulated));
 
-if makeplot(1)
-    figure(1)
+if makeplot{1}
+    figure;
     plot(y_vec_micron,n_simulated)
     xlabel('\mu m')
     ylabel('density [1/m^3]')
@@ -90,22 +94,35 @@ KappaTilde = (6*pi^2)^(2/3)/(6*pi) * ...
 %% add gaussian noise on density distribution
 n_simulated_noise = n_simulated + max(n_simulated) / s2n * randn(size(n_simulated));
 
-if makeplot(2)
-    figure(2)
+if makeplot{2}
+    figure;
     plot(y_vec_micron,n_simulated_noise)
     xlabel('\mu m')
     ylabel('density [1/m^3]')
+end
 
-    save('polarized_simulated_T0_1_noise_hires.mat','n_simulated','y_vec',...
-        'n_simulated_noise','PTilde','KappaTilde')
+%% Add shot noise
+n_od = n_simulated / max(n_simulated); % Making max od 1
+Ninitial = ones(size(n_simulated)) * Ncount;
+Nfinal = Ninitial ./ exp(n_od);
+Nabs = poissrnd(Nfinal)./poissrnd(Ninitial); Nabs( ~(Nabs > 0 & Nabs < Inf) ) = 1;
+n_od2 = -log(Nabs);
+n_simulated_shotnoise = n_od2 * max(n_simulated);
+
+if makeplot{3}
+    figure;
+    plot(y_vec_micron,n_simulated_shotnoise,'r.','MarkerSize',15)
+    xlabel('\mu m')
+    ylabel('density [1/m^3]')
 end
 
 %% Gather outputs
-outp.z = y_vec;
-outp.n = n_simulated;
-outp.n2 = n_simulated_noise;
-outp.Pt = PTilde; 
-outp.kt = KappaTilde;
+outp.z = y_vec';
+outp.n = n_simulated';
+outp.n2 = n_simulated_noise';
+outp.n3 = n_simulated_shotnoise';
+outp.Pt = PTilde'; 
+outp.kt = KappaTilde';
 
 
 end
