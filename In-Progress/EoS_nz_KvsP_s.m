@@ -101,6 +101,8 @@ switch methods{2}
             p = polyfit(U_i(max(1,i-t):min(length(U_i),i+t)), EF_U(max(1,i-t):min(length(U_i),i+t)), methods{4});
             k_U(i) = - polyval(polyder(p),U_i(i));
         end
+    case 'centraldiff', k_U = - centraldiff(U_i, EF_U, 1, 4);
+    case 'polydiff', k_U = - polydiff(U_i, EF_U, 1, 2);
 end
 k_U = k_U(2:end-1);
 
