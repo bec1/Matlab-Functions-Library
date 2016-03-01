@@ -1,4 +1,4 @@
-function diffout = centraldiff(points,data,varargin)
+function diffout = centraldiff(pointsinput,datainput,varargin)
 %% FDIFF calculates central finite differences of data(points)
 %           Inputs:
 %               data: the data to be differentiated
@@ -8,12 +8,12 @@ function diffout = centraldiff(points,data,varargin)
 
 %% Input handling
 
-if(length(data) ~= length(points))
+if(length(datainput) ~= length(pointsinput))
     msgbox('Please enter data of equal lengths')
 end
 
-data = reshape(data,[1 length(data)]);
-points = reshape(points, [1 length(data)]);
+data = reshape(datainput,[1 length(datainput)]);
+points = reshape(pointsinput, [1 length(datainput)]);
 
 switch nargin
     case 2
@@ -50,4 +50,8 @@ for i=1:length(data)
     end
     diffout(i) = diffcoeffs*neighborhood' / gridspacing;
 end
+
+%% Output handling
+% make output the same shape as the input
+diffout = reshape(diffout,size(pointsinput));
         
