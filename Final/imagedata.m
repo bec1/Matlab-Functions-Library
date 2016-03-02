@@ -322,5 +322,8 @@ if plot_set{1} == 1
     
 end
 
+%% Collecting outputs
+data.croprect = rect;
+
 end
 
