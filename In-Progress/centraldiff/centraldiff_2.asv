@@ -1,0 +1,43 @@
+function diffout = centraldiff_2(pointsinput,datainput)
+%% CENTRALDIFF_2 calculates central finite differences of data(points)
+%           First derivative with accuracy 2
+%           Inputs:
+%               data: the data to be differentiated
+%               points: the x grid
+% 
+
+%% Input handling
+
+if(length(datainput) ~= length(pointsinput))
+    msgbox('Please enter data of equal lengths')
+end
+
+data = reshape(datainput,[1 length(datainput)]);
+points = reshape(pointsinput, [1 length(datainput)]);
+
+
+%% Calculate diffs
+
+gridspacing = points(2) - points(1);
+
+diffout = data;
+
+for i=1:length(data)
+    if i==1 %forward difference at edge
+        diffcoeffs = [-1, 1];
+        neighborhood = data(i:i+1);
+        spacingfactor = 1/(points(2)-points(1));
+        diffout(i) = diffcoeffs*neighborhood' .* spacingfactor;
+    elseif i==length(data) %backward difference at edge
+        diffcoeffs = [-1 1];
+        neighborhood = data(i-1:i);
+    else %central difference at center
+        diffcoeffs = [-1/2, 0, 1/2];
+        neighborhood = data(i-1:i+1);
+    end
+end
+
+%% Output handling
+% make output the same shape as the input
+diffout = reshape(diffout,size(pointsinput));
+        

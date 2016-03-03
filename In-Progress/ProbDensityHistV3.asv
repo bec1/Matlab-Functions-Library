@@ -1,17 +1,9 @@
  function [ n , Pn ] = ProbDensityHistV3(image)
-<<<<<<< HEAD
-crop=[75,235,150,150];
-bgcrop = [100 100 50 50];
-folder='\\Elder-pc\j\Elder Backup Raw Images\2016\2016-02\2016-02-20\';
-Nimg=imcrop(image,crop);
-Nimg = imresize(Nimg,1/2);
-=======
-crop=[70,225,120,120];
+crop=[40,195,150,150];
 bgcrop = [100 100 50 50];
 folder='\\Elder-pc\j\Elder Backup Raw Images\2016\2016-02\2016-02-20\';
 Nimg=imcrop(image,crop);
 Nimg = imresize(Nimg,1/2,'Method','Box');
->>>>>>> roop
 figure(1)
 subplot(1,2,1)
 imagesc(Nimg);
@@ -43,20 +35,13 @@ end
 [~,ix] = max(Pn);
 n= n/n(ix);
 subplot(1,2,2)
-<<<<<<< HEAD
-plot(n,Pn,'.','MarkerSize',20)
-=======
 plot(n,Pn,'k-o',...
     'LineWidth',2,...
     'MarkerSize',5,...
     'MarkerEdgeColor','r',...
     'MarkerFaceColor','r')
->>>>>>> roop
 xlabel('n/n_0')
 ylabel('Counts')
 set(gca,'FontSize',14)
 xlim([0,max(n)])
-<<<<<<< HEAD
-=======
-ylim([-max(Pn)/10 max(Pn)])
->>>>>>> roop
+ylim([0 m
