@@ -5,7 +5,8 @@ function [ outp ] = LoSReconstructionTop( filename, varargin )
 %               or 'C://02-21-2016_04_04_05_top.fits'
 % 
 % Output is a structure with following fields
-%   .od_reconstructed : reconstructed od 
+%   .od_r             : reconstructed od 
+%   .od               : original od cropped
 %   .wa               : with atoms cropped image with dark subtracted
 %   .woa              : without atoms cropped image with dark subtracted
 %   .map              : 1 / line of sight integration, same size as crop image
@@ -102,7 +103,7 @@ if plotset{1}
     figure('Units','centimeters','Position',[5 5 30 15]);
 
     ax1 = subplot(3,4,[1,5,9]); 
-    datarange = [0, 1.2*data(fix(cropset{5}/2),fix(cropset{4}/2)) ];
+    datarange = [0, 2*data(fix(cropset{5}/2),fix(cropset{4}/2)) ];
     imshow(data,datarange); set(ax1,'YDir','normal'); %colormap jet;
     hold on; 
     for i = 1:length(ycuts)
@@ -114,7 +115,7 @@ if plotset{1}
     hold off;
 
     ax2 = subplot(3,4,[3,7,11]); 
-    data2range = [0, 1.2*data2(fix(cropset{5}/2),fix(cropset{4}/2)) ];
+    data2range = [0, 2*data2(fix(cropset{5}/2),fix(cropset{4}/2)) ];
     imshow(data2,data2range); set(ax2,'YDir','normal'); %colormap jet;
 
     ax3 = subplot(3,4,2);
@@ -145,7 +146,8 @@ outp.ry_fit = ry;
 outp.x0_line = x0l;
 outp.rx_line = rxl;
 outp.ry_line = ryl;
-outp.od_reconstructed = data2;
+outp.od_r = data2;
+outp.od = data;
 outp.wa = imcrop(rawdata.wa,rawdata.croprect);
 outp.woa = imcrop(rawdata.woa,rawdata.croprect);
 outp.imdata = rawdata;
