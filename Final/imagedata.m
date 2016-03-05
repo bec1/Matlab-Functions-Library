@@ -260,6 +260,8 @@ switch crop_set{1}
     case 'rect'
         rect = [crop_set{2} - crop_set{4}/2, crop_set{3} - crop_set{5}/2, crop_set{4}, crop_set{5}];
         data.od2 = imcrop(data.od, rect);
+        data.wa2 = imcrop(data.wa, rect);
+        data.woa2 = imcrop(data.woa, rect);
         if strcmp(bg_set{1},'avg')
             rect2 = [rect(1:2) - bg_set{2}, rect(3:4) + 2*bg_set{2}];
             tempod = imcrop(data.od, rect2);
@@ -305,7 +307,7 @@ if plot_set{1} == 1
     if strcmp(crop_set{1},'rect') || strcmp(crop_set{1},'ellipse')
         subplot(3,4,[3,4,7,8]); imshow(data.od2,[0,max(data.od2(:))]);set(gca,'YDir','normal'); title('Cropped OD');
         subplot(3,4,[2,6]); hold on; rectangle('Position', rect, 'EdgeColor','red'); 
-        if strcmp(bg_set{1},'avg'), rectangle('Position', rect2, 'EdgeColor','blue'); end 
+        if strcmp(bg_set{1},'avg'), rectangle('Position', rect2, 'EdgeColor','green'); end 
         hold off;    
     end
     % Drawing bad points
@@ -323,7 +325,9 @@ if plot_set{1} == 1
 end
 
 %% Collecting outputs
-data.croprect = rect;
+if strcmp(bg_set{1},'avg'), data.croprect = rect; end
+data.filename = fname;
+
 
 end
 
