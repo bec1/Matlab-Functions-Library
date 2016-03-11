@@ -101,6 +101,7 @@ Nsat = Inf;
 crop_set = {'none',10,10,4,4}; % none or rect or ellipse and [centX, centY, width or radius1, height or radius2]
 bg_set = {'none',10}; % none or avg or linear, width
 plot_set = {0};
+pol_set = {'none',0.05}; % none or sub -- What percent of light is the wrong polarization
 
 % Other Variables
 imagetype = 'unknown'; % 'side_n', 'side_fk_3', 'side_fk_4', 'top', 'unknown'
@@ -116,6 +117,7 @@ for i = 1:2:length(varargin)
         case 'plot', plot_set = varargin{i+1};
         case 'Nsat', Nsat = varargin{i+1};
         case 'bg', bg_set = varargin{i+1};
+        case 'pol', pol_set = varargin{i+1};
     end
 end
 
@@ -222,6 +224,12 @@ elseif strcmp(imagetype,'side_fk_4')
 else
     data.wa = rawdata(:,:,1);
     data.woa = rawdata(:,:,1);
+end
+
+% Subtract wrong polarization
+if strcmp(pol_set{1},'sub')
+    data.wa = data.wa - data.woa * pol_set{2};
+    data.woa = data.woa - data.woa * pol_set{2};
 end
 
 % absorption
