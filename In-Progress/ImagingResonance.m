@@ -8,13 +8,18 @@ function [nums,freqs,clouds,imgresfit] = ImagingResonance(images)
 %%
 
 images = processPaths(images);
-crop=[25,215,150,150];
+crop=[20,234,150,150];  
 
 data = loadDataset(images);
 clouds = getClouds(data,crop);
 
 nums = getNums(clouds);
 freqs = cell2mat(getFreqs(images));
+
+if range(freqs)==0 
+    disp('Please vary the imaging frequency')
+    return
+end
 
 imgresfit = imagingResFit(freqs,nums);
 plot(freqs,nums,'.','MarkerSize',15)
@@ -57,8 +62,6 @@ function nums = getNums(clouds)
     end
     
 end
-
-
 
 function clouds = getClouds(data,crop)
 %% Get 1D axial profiles

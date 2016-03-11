@@ -98,6 +98,9 @@ map = 1 ./ lineofsightint;
 map2 = map; map2(abs(map2)>100) = 0;
 data2 = map2.*data;
 
+% Smoothen data2 for contour plot
+data2_s = imgaussfilt(data2,2);
+
 %% figures
 if plotset{1}
     figure('Units','centimeters','Position',[5 5 30 15]);

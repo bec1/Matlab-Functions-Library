@@ -81,7 +81,11 @@ function imgout = processPaths(images)
     month = strcat(year,'-',num2str(c(2),'%02d'));
     day = strcat(month,'-','01');
     filename = images{1};
-    sourcepath = '\\Elder-pc\j\Elder Backup Raw Images';
+    if getenv('USERNAME')=='Elder'
+        sourcepath = 'J:\Elder Backup Raw Images'
+    else
+        sourcepath = '\\Elder-pc\j\Elder Backup Raw Images';
+    end
     source=strcat(sourcepath,'\',year,'\',month,'\',day);
     imgout = cellfun(@(x) strcat(source,'\',x,'.fits'), images,'UniformOutput',false);
 end
