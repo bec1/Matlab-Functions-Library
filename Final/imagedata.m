@@ -49,6 +49,7 @@ function [ data, rawdata ] = imagedata( filename, varargin )
 % Last Edits
 %   Parth 2/20/2016 : Version 1.0 finished
 %   Parth 2/26/2016 : Version 1.1 - can read defringed files, added visualization for bad points.
+%   Parth 3/14/2016 : Version 1.1 - Major bug fixed which prevented files from previous day to open.
 
 %% Database of computers
 % WARMING! Pc name MUST be a valid variable name. Use the following code to determine your pc name
@@ -143,8 +144,8 @@ imdatenum = datenum(imdatestr,'mm-dd-yyyy');
 subpaths = cell(12,1);
 subpaths{1} = fullfile(datestr(imdatenum,'yyyy'),datestr(imdatenum,'yyyy-mm'),datestr(imdatenum,'yyyy-mm-dd'));
 subpaths{2} = fullfile(datestr(imdatenum-1,'yyyy'),datestr(imdatenum-1,'yyyy-mm'),datestr(imdatenum-1,'yyyy-mm-dd'));
-subpaths{2} = fullfile(datestr(imdatenum-2,'yyyy'),datestr(imdatenum-2,'yyyy-mm'),datestr(imdatenum-2,'yyyy-mm-dd'));
-subpaths{3} = fullfile(datestr(imdatenum+1,'yyyy'),datestr(imdatenum+1,'yyyy-mm'),datestr(imdatenum+1,'yyyy-mm-dd'));
+subpaths{3} = fullfile(datestr(imdatenum-2,'yyyy'),datestr(imdatenum-2,'yyyy-mm'),datestr(imdatenum-2,'yyyy-mm-dd'));
+subpaths{4} = fullfile(datestr(imdatenum+1,'yyyy'),datestr(imdatenum+1,'yyyy-mm'),datestr(imdatenum+1,'yyyy-mm-dd'));
 
 % Search for image on master_paths
 for i = 1:length(pcdatabase.(pcname).master_paths)
@@ -305,7 +306,7 @@ if plot_set{1} == 1
     range2 = [0,max(max(rawdata(:,:,3)))];
     figure;
     subplot(3,4,[1,5]); imshow(data.abs2,[0,1.2]); set(gca,'YDir','normal'); title('Absorption');
-    subplot(3,4,[2,6]); imshow(data.od,[0,max(data.od(:))]);set(gca,'YDir','normal'); title('OD');
+    subplot(3,4,[2,6]); imshow(data.od,[0,min(max(data.od(:)),2)]);set(gca,'YDir','normal'); title('OD');
     subplot(3,4,9); imshow(data.wa,range1);set(gca,'YDir','normal'); title('With Atoms');
     subplot(3,4,10); imshow(data.woa,range1);set(gca,'YDir','normal'); title('Without Atoms');
     if strcmp(imagetype,'top') || strcmp(imagetype,'side_n') || strcmp(imagetype,'side_fk_3') || strcmp(imagetype,'side_fk_4')
