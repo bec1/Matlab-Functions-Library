@@ -90,6 +90,13 @@ pcdatabase.ParthPatel.minor_paths = {'C:\Users\Parth Patel\Downloads';...
 pcdatabase.ParthPatel.snippet_path = 'D:\Dropbox Sync\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images\Snippet_output';
 
 % 
+% biswaroopmukherjee
+pcdatabase.biswaroopmukherjee.master_paths = {'\\Elder-pc\j\Elder Backup Raw Images';...
+                                   'C:\Users\BEC1\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images'};
+pcdatabase.biswaroopmukherjee.minor_paths = {'C:\2016-01';...
+                               'C:\2016-02';...
+                               'C:\Users\BEC1\Desktop'};
+pcdatabase.biswaroopmukherjee.snippet_path = 'C:\Users\BEC1\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images\Snippet_output';
 
 %% Constants, variables and inputs
 % Universal constants
