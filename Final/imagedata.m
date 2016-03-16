@@ -138,8 +138,8 @@ filefound = exist(filename,'file');
 % File not yet found and pc is not right
 if ~filefound && ~validpc, error(['PC name ',pcname,' is not in the database. Please add it.']); end
 
-% Find date information
-imdatestr = regexp(filename,'\d\d-\d\d-\d\d\d\d','match');
+% Find date information 07-29-2015_22_00_48.fits
+imdatestr = regexp(filename,'\d\d-\d\d-\d\d\d\d_\d\d_\d\d_\d\d','match');
 imdatenum = datenum(imdatestr,'mm-dd-yyyy');
 subpaths = cell(12,1);
 subpaths{1} = fullfile(datestr(imdatenum,'yyyy'),datestr(imdatenum,'yyyy-mm'),datestr(imdatenum,'yyyy-mm-dd'));
