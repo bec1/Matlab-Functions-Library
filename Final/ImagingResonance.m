@@ -1,20 +1,32 @@
-function [nums,freqs,clouds,imgresfit] = ImagingResonance(images)
+function [nums,freqs,clouds,imgresfit] = ImagingResonance(images,varargin)
 %% Usage:
-%   - Input: images: acell of filenames, without the extension
+%   - Input: images: a cell of filenames, without the extension
+%            crop: the usual crop parameters passed to imcrop [x0 y0 w l]
 %   - Output: ImagingResonance(images)
 %       nums = # of atoms, a.u.
 %       freqs = imaging frequencies extracted from the snippet Server
-%       clouds = 
+%       clouds = images loaded
 %%
+switch nargin
+    case 1
+        crop=[20,234,150,150];  
+    case 2
+        crop = varargin{1};
+end
+        
 
 images = processPaths(images);
-crop=[25,215,150,150];
 
 data = loadDataset(images);
 clouds = getClouds(data,crop);
 
 nums = getNums(clouds);
 freqs = cell2mat(getFreqs(images));
+
+if range(freqs)==0 
+    disp('Please vary the imaging frequency')
+    return
+end
 
 imgresfit = imagingResFit(freqs,nums);
 plot(freqs,nums,'.','MarkerSize',15)
@@ -57,8 +69,6 @@ function nums = getNums(clouds)
     end
     
 end
-
-
 
 function clouds = getClouds(data,crop)
 %% Get 1D axial profiles
