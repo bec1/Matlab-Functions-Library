@@ -1,4 +1,4 @@
-function output = momentumfocus(momimages,bgimages,refimg,varargin)
+function output = momentumfocus(momimages,bgimages,varargin)
 %% Calculate momentum focused profiles
 % Inputs: momimages: a cell array of T/4 momentum space focused image filenames
 %         bgimages: a cell array of no atoms image filenames for background sub
@@ -30,6 +30,10 @@ nbins = 70;
 CropTail=1;
 IfTailTailor=1;
 Fudge=2.62;
+D=85;
+H=25;
+Volume=pi/4*D^2*H*pixellength^3;
+
 for i =1:length(varargin)
     if ischar(varargin{i})
         switch varargin{i}
@@ -131,25 +135,32 @@ n1dk=(n1dz/Volume)*hbar/(m*omega);
 kzsq=kz.^2;
 
 %% Bin n1d(kz^2) 
-kzsqBinGrid=linspace(0,max(kzsq));
+kzsqBinGrid=linspace(0,max(kzsq),101);
+[ kzsqBin,n1dkBin,~,~ ] = BinGrid( kzsq,n1dk,kzsqBinGrid,0 );
+kzsqBin(isnan(n1dkBin))=[];n1dkBin(isnan(n1dkBin))=[];
 
 %% Scale kz and plot vs kz^2
 subplot(2,2,3);
 scatter(n1dk,kzsq./(kF.^2));
+hold on
+plot(kzsqBin./(kF.^2),n1dkBin);
+hold off
+
+output=[];
 %% Differentiate
-[k,nofk,nofkfit] = plotnofk(kzsqedges,nmeans,sm);
+% [k,nofk,nofkfit] = plotnofk(kzsqedges,nmeans,sm);
 
-%% Output results
-
-output.kz = kz;
-output.profile = n;
-
-output.kz_sq = kzsqedges;
-output.nmeans = nmeans;
-
-output.k =k;
-output.nofk = nofk;
-output.nofkfit = nofkfit;
+% %% Output results
+% 
+% output.kz = kz;
+% output.profile = n;
+% 
+% output.kz_sq = kzsqedges;
+% output.nmeans = nmeans;
+% 
+% output.k =k;
+% output.nofk = nofk;
+% output.nofkfit = nofkfit;
 end
 
 function [k,nofk,fitresult] = plotnofk(kzsqedges,nmeans,sm)
