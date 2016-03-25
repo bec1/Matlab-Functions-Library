@@ -99,6 +99,12 @@ pcdatabase.biswaroopmukherjee.minor_paths = {'C:\2016-01';...
                                'C:\Users\BEC1\Desktop'};
 pcdatabase.biswaroopmukherjee.snippet_path = 'C:\Users\BEC1\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images\Snippet_output';
 
+%Zhenjie Yan
+
+pcdatabase.Zhenjie.master_paths = {'/Volumes/Raw Data/Images'};
+pcdatabase.Zhenjie.minor_paths = {''};
+pcdatabase.Zhenjie.snippet_path = '/Volumes/Raw Data/Snippet';
+
 %% Constants, variables and inputs
 % Universal constants
 
