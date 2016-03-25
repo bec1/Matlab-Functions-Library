@@ -1,4 +1,4 @@
-function output = momentumfocus(momimages,bgimages,varargin)
+function output = momentumfocusRV(momimages,bgimages,varargin)
 %% Calculate momentum focused profiles
 % Inputs: momimages: a cell array of T/4 momentum space focused image filenames
 %         bgimages: a cell array of no atoms image filenames for background sub
@@ -24,9 +24,9 @@ function output = momentumfocus(momimages,bgimages,varargin)
 pixellength=1.44*10^(-6);
 sigma0=0.215/2*10^(-12);
 Nsat=330;
-ROI1 = [205,0,150,500];
-sm = 4;
-nbins = 70;
+ROI1 = [205,2,150,500];
+sm = 2;
+nbins = 100;
 CropTail=1;
 IfTailTailor=1;
 Fudge=2.62;
@@ -87,9 +87,9 @@ momcrop = imcrop(momimg,ROI1);
 
 
 %% Get profiles
-n=sum(momcrop,2);
+n=sum(momcrop,2)';
 z=1:length(n);
-
+n(isnan(n))=0;
 if IfTailTailor
     if CropTail
         h=figure();
@@ -122,45 +122,42 @@ colormap gray; caxis([0,max(momcrop(:))]);
 z = pixellength *(1:length(n));
 kz = m*omega*z/hbar;
 
+output={n,kz};
 %% Plot n vs kz
 nvskzfit = plotnvskz(kz,n);
 
 %% Get n1d(k) vs k^2 
-mu=nvskzfit.mu*1e16;
+mu=nvskzfit.mu*1e12;
 kF=sqrt(mu);
-kz0=nvskzfit.x0*1e8;
+kz0=nvskzfit.x0*1e6;
 kz=kz-kz0;
 n1dz=n/pixellength;
 n1dk=(n1dz/Volume)*hbar/(m*omega);
 kzsq=kz.^2;
 
 %% Bin n1d(kz^2) 
-kzsqBinGrid=linspace(0,max(kzsq),101);
+kzsqBinGrid=linspace(0,max(kzsq),nbins+1);
 [ kzsqBin,n1dkBin,~,~ ] = BinGrid( kzsq,n1dk,kzsqBinGrid,0 );
 kzsqBin(isnan(n1dkBin))=[];n1dkBin(isnan(n1dkBin))=[];
 
 %% Scale kz and plot vs kz^2
 subplot(2,2,3);
-scatter(n1dk,kzsq./(kF.^2));
+scatter(kzsq./(kF.^2),n1dk);
 hold on
-plot(kzsqBin./(kF.^2),n1dkBin);
+plot(kzsqBin./(kF.^2),n1dkBin,'r.-');
 hold off
 
-output=[];
 %% Differentiate
-% [k,nofk,nofkfit] = plotnofk(kzsqedges,nmeans,sm);
-
-% %% Output results
-% 
-% output.kz = kz;
-% output.profile = n;
-% 
-% output.kz_sq = kzsqedges;
-% output.nmeans = nmeans;
-% 
-% output.k =k;
-% output.nofk = nofk;
-% output.nofkfit = nofkfit;
+fk=-8*pi^2*FiniteD( kzsqBin,n1dkBin,sm );
+subplot(2,2,4);
+kzBin=sqrt(kzsqBin);
+scatter(kzBin,fk);
+hold on
+[P,ffit]=FDfit(kzBin,fk);
+plot(kzBin,ffit,'DisplayName',['1/\beta\mu=',num2str(1/P(2))]);
+legend('show')
+hold off
+title(['Additional prefactor =',num2str(P(1))]);
 end
 
 function [k,nofk,fitresult] = plotnofk(kzsqedges,nmeans,sm)
@@ -247,17 +244,15 @@ end
 function fitresult = plotnvskz(kz,n)
 %% Plot n vs kz
     figure(1);subplot(2,2,2);
-    n = n/1e9;
-    kz = kz/1e8;
+    kz = kz/1e6;
     plot(kz,n,'.','MarkerSize',10,'DisplayName','data')
-
+    
     [xData, yData] = prepareCurveData( kz, n );
-
     % Set up fittype and options.
     ft = fittype( 'a*log(1+exp(beta*(mu-(x-x0)^2)))+d', 'independent', 'x', 'dependent', 'y' );
     opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
     opts.Display = 'Off';
-    opts.StartPoint = [0.2 2 0 4 5];
+    opts.StartPoint = [30 2 0 8 4];
 
     % Fit model to data.
     [fitresult, ~] = fit( xData, yData, ft, opts );
@@ -267,7 +262,7 @@ function fitresult = plotnvskz(kz,n)
     plot(kz,fitresult(kz),'k','LineWidth',2,'DisplayName',strcat('1/(\beta\mu) = ',num2str(tovertf,'%0.2f')))
     legend('show')
     xlim([min(kz) max(kz)])
-    xlabel('k_z [x 10^{8} m^{-1}]')
+    xlabel('k_z [x 10^{6} m^{-1}]')
     ylabel('n [x 10^9 atoms/cm^{-3}/spin]')
     set(gca,'FontSize',14)
     hold off
@@ -290,4 +285,11 @@ opts.SmoothingParam = 1.2338479537501e-05;
 % plot(xData,yData)
 % hold all
 % plot(bgfitresult)
+end
+
+function [P,ffit]=FDfit(k,f)
+    FDfun=@(P,k) P(1)*1./(exp(P(2)*((k/P(3)).^3-1))+1);
+    P0=[0,5,max(k)/2];
+    P=nlinfit(k,f,FDfun,P0);
+    ffit=FDfun(P,k);
 end
