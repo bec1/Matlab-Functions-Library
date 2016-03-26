@@ -24,7 +24,7 @@ function output = momentumfocusRV(momimages,bgimages,varargin)
 pixellength=1.44*10^(-6);
 sigma0=0.215/2*10^(-12);
 Nsat=330;
-ROI1 = [205,2,150,500];
+ROI1 = [205,15,150,480];
 sm = 2;
 nbins = 100;
 CropTail=1;
@@ -102,7 +102,8 @@ if IfTailTailor
     end
     n=TailTailor(n,z,zmin,zmax);
 end
-
+output.Nz=n;
+output.zPixel=z;
 %% Plot the Image
 figure(1);
 subplot(2,2,1); imagesc(momcrop); axis image; axis off
@@ -122,42 +123,80 @@ colormap gray; caxis([0,max(momcrop(:))]);
 z = pixellength *(1:length(n));
 kz = m*omega*z/hbar;
 
-output={n,kz};
+%% Get the density and kF from the total atom number
+Ntot=sum(n);
+nintrap=Ntot/Volume;
+kFn=(6*pi^2*nintrap)^(1/3);
+output.Ntot=Ntot;
+output.nintrap=nintrap;
+output.kF_num=kFn;
 %% Plot n vs kz
 nvskzfit = plotnvskz(kz,n);
 
 %% Get n1d(k) vs k^2 
 mu=nvskzfit.mu*1e12;
-kF=sqrt(mu);
+k0=sqrt(abs(mu)); %sqrt(\mu)
 kz0=nvskzfit.x0*1e6;
 kz=kz-kz0;
+% kmin=min(kz);kmax=max(kz);
+% kgrid1=linspace(kmin,kmax,51);
+% [kz,n,~,~ ]=BinGrid(kz,n,kgrid1,0 );
+
 n1dz=n/pixellength;
 n1dk=(n1dz/Volume)*hbar/(m*omega);
 kzsq=kz.^2;
 
+output.kz=kz;
+output.n1dofk=n1dk;
+output.n1dofz=n1dz;
+output.kzsq=kzsq;
+
 %% Bin n1d(kz^2) 
 kzsqBinGrid=linspace(0,max(kzsq),nbins+1);
 [ kzsqBin,n1dkBin,~,~ ] = BinGrid( kzsq,n1dk,kzsqBinGrid,0 );
+% kzsqBin=kzsq;
+% n1dkBin=n1dk;
 kzsqBin(isnan(n1dkBin))=[];n1dkBin(isnan(n1dkBin))=[];
 
+output.kzsqBin=kzsqBin;
+output.n1dofkBin=n1dkBin;
 %% Scale kz and plot vs kz^2
 subplot(2,2,3);
-scatter(kzsq./(kF.^2),n1dk);
+scatter(kzsq,n1dk,'DisplayName','Unbinned');
 hold on
-plot(kzsqBin./(kF.^2),n1dkBin,'r.-');
+plot(kzsqBin,n1dkBin,'r.-','DisplayName','Binned');
+line([kFn^2,kFn^2],[min(n1dk),max(n1dk)],'DisplayName','kF from N_{tot}','color','c','LineWidth',2);
 hold off
-
+xlim([0,4.5*kFn^2]);
+xlabel('k_z^2 (m^{-1})');
+ylabel('n_{k,1D}');
+legend('show');
 %% Differentiate
 fk=-8*pi^2*FiniteD( kzsqBin,n1dkBin,sm );
 subplot(2,2,4);
 kzBin=sqrt(kzsqBin);
+kzFit=kzBin/k0;
+[P,ffit]=FDfit(kzFit,fk);
+P(3)=P(3)*k0^2;
+[EF_Fit,n_Fit,kF_Fit,beta]=GetEF(P);
+
+T=1/(beta*EF_Fit);
 scatter(kzBin,fk);
 hold on
-[P,ffit]=FDfit(kzBin,fk);
-plot(kzBin,ffit,'DisplayName',['1/\beta\mu=',num2str(1/P(2))]);
+plot(kzBin,ffit,'DisplayName',['1/\beta\mu=',num2str(1/P(2)),'T/T_F=',num2str(T)]);
+line([kFn,kFn],[0,1],'DisplayName','kF from N_{tot}','color','c','LineWidth',2);
+line([kF_Fit,kF_Fit],[0,1],'DisplayName','kF from Fermi-Dirac','color','r','Linewidth',2)
 legend('show')
 hold off
 title(['Additional prefactor =',num2str(P(1))]);
+xlabel('k (m^{-1})');ylabel('n(k)');
+output.kzBin=kzBin;
+output.Pfit=P;
+output.nfit=n_Fit;
+output.EF_Fit=EF_Fit;
+output.kF_Fit=kF_Fit;
+output.beta=beta;
+output.T=T;
 end
 
 function [k,nofk,fitresult] = plotnofk(kzsqedges,nmeans,sm)
@@ -260,11 +299,21 @@ function fitresult = plotnvskz(kz,n)
     hold all
     % plot
     plot(kz,fitresult(kz),'k','LineWidth',2,'DisplayName',strcat('1/(\beta\mu) = ',num2str(tovertf,'%0.2f')))
-    legend('show')
     xlim([min(kz) max(kz)])
     xlabel('k_z [x 10^{6} m^{-1}]')
-    ylabel('n [x 10^9 atoms/cm^{-3}/spin]')
+    ylabel('n (Atom per pixel)')
     set(gca,'FontSize',14)
+%     kmin=min(kz);kmax=max(kz);
+%     kgrid1=linspace(kmin,kmax,51);
+%     kgrid2=linspace(kmin,kmax,101);
+%     kgrid3=linspace(kmin,kmax,201);
+%     [k1,n1,~,~ ]=BinGrid(kz,n,kgrid1,0 );
+%     plot(k1,n1,'*','DisplayName','Nbin=50');
+%     [k2,n2,~,~ ]=BinGrid(kz,n,kgrid2,0 );
+%     plot(k2,n2,'DisplayName','Nbin=100');
+%     [k3,n3,~,~ ]=BinGrid(kz,n,kgrid3,0 );
+%     plot(k3,n3,'DisplayName','Nbin=200');
+    legend('show')
     hold off
 end
 
@@ -288,8 +337,8 @@ opts.SmoothingParam = 1.2338479537501e-05;
 end
 
 function [P,ffit]=FDfit(k,f)
-    FDfun=@(P,k) P(1)*1./(exp(P(2)*((k/P(3)).^3-1))+1);
-    P0=[0,5,max(k)/2];
+    FDfun=@(P,k) P(1)*1./(exp(P(2)*(k.^2/P(3)-1))+1);
+    P0=[1,5,1];
     P=nlinfit(k,f,FDfun,P0);
     ffit=FDfun(P,k);
 end
