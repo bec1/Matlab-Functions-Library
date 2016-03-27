@@ -55,54 +55,39 @@ function [ data, rawdata ] = imagedata( filename, varargin )
 % WARMING! Pc name MUST be a valid variable name. Use the following code to determine your pc name
 % disp(matlab.lang.makeValidName(char(java.lang.System.getProperty('user.name'))));
 
-% RanchoP
-pcdatabase.RanchoP.master_paths = {'/Users/RanchoP/Dropbox (MIT)/BEC1/Image Data and Cicero Files/Data - Raw Images/'};
-pcdatabase.RanchoP.minor_paths = {'/Users/RanchoP/Desktop';...
-                                  '/Users/RanchoP/Documents';...
-                                  '/Users/RanchoP/Downloads'};
-pcdatabase.RanchoP.snippet_path = '/Users/RanchoP/Dropbox (MIT)/BEC1/Image Data and Cicero Files/Data - Raw Images/Snippet_output';
-
 % Elder
-pcdatabase.Elder.master_paths = {'J:\Elder Backup Raw Images';...
-                                 'C:\Users\Elder\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images'};
+pcdatabase.Elder.master_paths = {'\\18.62.1.253\Raw Data\Images'};
 pcdatabase.Elder.minor_paths = {'C:\Users\Elder\Desktop'};
-pcdatabase.Elder.snippet_path = 'C:\Users\Elder\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images\snippet_output';
+pcdatabase.Elder.snippet_path = '\\18.62.1.253\Raw Data\Snippet';
 
 % BEC1
-pcdatabase.BEC1.master_paths = {'\\Elder-pc\j\Elder Backup Raw Images';...
-                                   'C:\Users\BEC1\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images'};
-pcdatabase.BEC1.minor_paths = {'C:\2016-01';...
-                               'C:\2016-02';...
-                               'C:\Users\BEC1\Desktop'};
-pcdatabase.BEC1.snippet_path = 'C:\Users\BEC1\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images\Snippet_output';
+pcdatabase.BEC1.master_paths = {'\\18.62.1.253\Raw Data\Images'};
+pcdatabase.BEC1.minor_paths = {'C:\2016-01'};
+pcdatabase.BEC1.snippet_path = '\\18.62.1.253\Raw Data\Snippet';
 
 % BEC1Top
-pcdatabase.BEC1Top.master_paths = {'\\Elder-pc\j\Elder Backup Raw Images';...
-                                   'C:\Users\BEC1\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images'};
-pcdatabase.BEC1Top.minor_paths = {'C:\2016\2016-02';...
-                                  'C:\Users\BEC1\Desktop'};
-pcdatabase.BEC1Top.snippet_path = 'C:\Users\BEC1\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images\Snippet_output';
+pcdatabase.BEC1Top.master_paths = {'\\18.62.1.253\Raw Data\Images'};
+pcdatabase.BEC1Top.minor_paths = {'C:\2016\2016-02'};
+pcdatabase.BEC1Top.snippet_path = '\\18.62.1.253\Raw Data\Snippet';
+
+% RanchoP, parth laptop
+pcdatabase.RanchoP.master_paths = {'/Volumes/Raw Data/Images'};
+pcdatabase.RanchoP.minor_paths = {'/Users/RanchoP/Downloads'};
+pcdatabase.RanchoP.snippet_path = '/Volumes/Raw Data/Snippet';
 
 % ParthPatel, home pc
-pcdatabase.ParthPatel.master_paths = {'D:\Dropbox Sync\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images'};
-pcdatabase.ParthPatel.minor_paths = {'C:\Users\Parth Patel\Downloads';...
-                                     'C:\Users\Parth Patel\Documents';...
-                                     'C:\Users\Parth Patel\Desktop'};
-pcdatabase.ParthPatel.snippet_path = 'D:\Dropbox Sync\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images\Snippet_output';
+pcdatabase.ParthPatel.master_paths = {'\\18.62.1.253\Raw Data\Images'};
+pcdatabase.ParthPatel.minor_paths = {'C:\Users\Parth Patel\Downloads'};
+pcdatabase.ParthPatel.snippet_path = '\\18.62.1.253\Raw Data\Snippet';
 
-% 
 % biswaroopmukherjee
-pcdatabase.biswaroopmukherjee.master_paths = {'\\Elder-pc\j\Elder Backup Raw Images';...
-                                   'C:\Users\BEC1\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images'};
-pcdatabase.biswaroopmukherjee.minor_paths = {'C:\2016-01';...
-                               'C:\2016-02';...
-                               'C:\Users\BEC1\Desktop'};
-pcdatabase.biswaroopmukherjee.snippet_path = 'C:\Users\BEC1\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images\Snippet_output';
+pcdatabase.biswaroopmukherjee.master_paths = {'/Volumes/Raw Data/Images'};
+pcdatabase.biswaroopmukherjee.minor_paths = {'/Volumes/Raw Data/Images'};
+pcdatabase.biswaroopmukherjee.snippet_path = '/Volumes/Raw Data/Snippet';
 
 %Zhenjie Yan
-
 pcdatabase.Zhenjie.master_paths = {'/Volumes/Raw Data/Images'};
-pcdatabase.Zhenjie.minor_paths = {''};
+pcdatabase.Zhenjie.minor_paths = {'/Volumes/Raw Data/Images'};
 pcdatabase.Zhenjie.snippet_path = '/Volumes/Raw Data/Snippet';
 
 %% Constants, variables and inputs
