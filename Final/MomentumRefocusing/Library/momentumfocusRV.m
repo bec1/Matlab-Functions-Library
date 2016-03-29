@@ -56,7 +56,6 @@ for i =1:length(varargin)
     end
 end
 %% Import functions and data
-addpath('C:\Users\Elder\Documents\GitHub\Matlab-Functions-Library\Final');
 m= 9.96e-27;
 omega = 2*pi*24;
 hbar = 1.05e-34;
@@ -153,13 +152,15 @@ output.kzsq=kzsq;
 
 %% Bin n1d(kz^2) 
 kzsqBinGrid=linspace(0,max(kzsq),nbins+1);
-[ kzsqBin,n1dkBin,~,~ ] = BinGrid( kzsq,n1dk,kzsqBinGrid,0 );
+[ kzsqBin,n1dkBin,kzsqStd,n1dkStd ] = BinGrid( kzsq,n1dk,kzsqBinGrid,0 );
 % kzsqBin=kzsq;
 % n1dkBin=n1dk;
 kzsqBin(isnan(n1dkBin))=[];n1dkBin(isnan(n1dkBin))=[];
-
+kzsqStd(isnan(n1dkBin))=[];n1dkStd(isnan(n1dkBin))=[];
 output.kzsqBin=kzsqBin;
 output.n1dofkBin=n1dkBin;
+output.kzsqStd=kzsqStd;
+output.n1dkStd=n1dkStd;
 %% Scale kz and plot vs kz^2
 subplot(2,2,3);
 scatter(kzsq,n1dk,'DisplayName','Unbinned');
@@ -172,7 +173,9 @@ xlabel('k_z^2 (m^{-1})');
 ylabel('n_{k,1D}');
 legend('show');
 %% Differentiate
-fk=-8*pi^2*FiniteD( kzsqBin,n1dkBin,sm );
+[fk,fkStd]=FiniteD( kzsqBin,kzsqStd,n1dkBin,n1dkStd,sm );
+fk=-8*pi^2*fk;
+fkStd=-8*pi^2*fkStd;
 subplot(2,2,4);
 kzBin=sqrt(kzsqBin);
 kzFit=kzBin/k0;
@@ -181,7 +184,7 @@ P(3)=P(3)*k0^2;
 [EF_Fit,n_Fit,kF_Fit,beta]=GetEF(P);
 
 T=1/(beta*EF_Fit);
-scatter(kzBin,fk);
+errorbar(kzBin,fk,fkStd);
 hold on
 plot(kzBin,ffit,'DisplayName',['1/\beta\mu=',num2str(1/P(2)),'T/T_F=',num2str(T)]);
 line([kFn,kFn],[0,1],'DisplayName','kF from N_{tot}','color','c','LineWidth',2);
@@ -197,6 +200,8 @@ output.EF_Fit=EF_Fit;
 output.kF_Fit=kF_Fit;
 output.beta=beta;
 output.T=T;
+output.fk=fk;
+output.fkStd=fkStd;
 end
 
 function [k,nofk,fitresult] = plotnofk(kzsqedges,nmeans,sm)

@@ -21,7 +21,7 @@ end
 
 for i=1:Nbin
     YMean(i)=mean(YBinList{i});
-    YStd(i)=std(YBinList{i});
+    YStd(i)=std(YBinList{i})/sqrt(YBinList{i});
 end
 
 end
