@@ -131,7 +131,7 @@ output.nintrap=nintrap;
 output.kF_num=kFn;
 %% Plot n vs kz
 nvskzfit = plotnvskz(kz,n);
-
+output.nvskzfit=nvskzfit;
 %% Get n1d(k) vs k^2 
 mu=nvskzfit.mu*1e12;
 k0=sqrt(abs(mu)); %sqrt(\mu)
