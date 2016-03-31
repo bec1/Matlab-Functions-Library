@@ -21,6 +21,7 @@ function output = momentumfocusRV(momimages,bgimages,varargin)
 %             nofkfit: the fermi dirac distribution fit to the data
 
 %%
+h=figure();
 pixellength=1.44*10^(-6);
 sigma0=0.215/2*10^(-12);
 Nsat=330;
@@ -33,7 +34,7 @@ Fudge=2.62;
 D=85;
 H=25;
 Volume=pi/4*D^2*H*pixellength^3;
-
+output.Volume=Volume;
 for i =1:length(varargin)
     if ischar(varargin{i})
         switch varargin{i}
@@ -131,6 +132,7 @@ output.nintrap=nintrap;
 output.kF_num=kFn;
 %% Plot n vs kz
 nvskzfit = plotnvskz(kz,n);
+output.n=n;
 output.nvskzfit=nvskzfit;
 %% Get n1d(k) vs k^2 
 mu=nvskzfit.mu*1e12;
@@ -151,6 +153,7 @@ output.n1dofz=n1dz;
 output.kzsq=kzsq;
 
 %% Bin n1d(kz^2) 
+% kzsqBinGrid=linspace(0,max(sqrt(kzsq)),nbins+1).^2;
 kzsqBinGrid=linspace(0,max(kzsq),nbins+1);
 [ kzsqBin,n1dkBin,kzsqStd,n1dkStd ] = BinGrid( kzsq,n1dk,kzsqBinGrid,0 );
 % kzsqBin=kzsq;
@@ -341,9 +344,4 @@ opts.SmoothingParam = 1.2338479537501e-05;
 % plot(bgfitresult)
 end
 
-function [P,ffit]=FDfit(k,f)
-    FDfun=@(P,k) P(1)*1./(exp(P(2)*(k.^2/P(3)-1))+1);
-    P0=[1,5,1];
-    P=nlinfit(k,f,FDfun,P0);
-    ffit=FDfun(P,k);
-end
+
