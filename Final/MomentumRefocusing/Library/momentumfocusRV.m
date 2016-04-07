@@ -25,7 +25,7 @@ h=figure();
 pixellength=1.44*10^(-6);
 sigma0=0.215/2*10^(-12);
 Nsat=330;
-ROI1 = [205,15,150,480];
+ROI1 = [180,15,180,480];
 sm = 2;
 nbins = 100;
 CropTail=1;
@@ -66,6 +66,9 @@ momavg=0;
 for i=1:Nmom
     [~,tempraw]=imagedata(momimages{i});
     Ntemp=AtomNumber(tempraw,pixellength.^2,sigma0, Nsat);
+    Ntemp(isnan(Ntemp))=0;
+    Ntemp(Ntemp==inf)=0;
+    Ntemp(Ntemp==-inf)=0;
     momavg=momavg+Ntemp;
 end
 momavg=momavg/Nmom;
@@ -75,10 +78,15 @@ bgavg=0;
 for i=1:Nbg
     [~,tempraw]=imagedata(bgimages{i});
     Ntemp=AtomNumber(tempraw,pixellength.^2,sigma0, Nsat);
+    Ntemp(isnan(Ntemp))=0;
+    Ntemp(Ntemp==inf)=0;
+    Ntemp(Ntemp==-inf)=0;
     bgavg=bgavg+Ntemp;
 end
 bgavg=bgavg/Nbg;
-
+if Nbg==0
+    bgavg=0;
+end
 %% BG subtraction
 momimg=momavg-bgavg;
 momimg=momimg*Fudge;
