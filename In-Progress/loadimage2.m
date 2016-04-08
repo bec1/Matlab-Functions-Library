@@ -5,7 +5,7 @@ function img=loadimage2(filename)
 % for display
 % For fits files, just load the image and do the log.
 
-sourcepath = ('J:\Elder Backup Raw Images');
+sourcepath = ('\\Elder-pc\j\Elder Backup Raw Images');
 year = filename(7:10);
 month = filename(1:2);
 day = filename(4:5);

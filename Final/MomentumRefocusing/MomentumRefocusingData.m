@@ -1,5 +1,6 @@
 %%
 addpath('Library')
+addpath('C:\Users\BEC1\Documents\MATLAB\Matlab-Functions-Library\Final')
 kFNlist=[];
 kFFitlist=[];
 
@@ -82,7 +83,10 @@ output=momentumfocusRV(momimages,bgimages,'Nbins' ,50,'SM',3);
 %%
 kFNlist=[kFNlist,output.kF_num]
 kFFitlist=[kFFitlist,output.kF_Fit]
-
+%%
+momimages={'04-04-2016_22_26_43_top';'04-04-2016_22_25_47_top';'04-04-2016_22_24_51_top';'04-04-2016_22_23_02_top';'04-04-2016_22_22_06_top';'04-04-2016_22_21_11_top'};
+bgimages={'04-04-2016_22_34_15_top';};
+output=momentumfocusRV(momimages,bgimages,'Nbins' ,50,'SM',3,'Fudge',1);
 
 %%
 scatter(kFNlist,kFFitlist,'DisplayName','Experimental Data');

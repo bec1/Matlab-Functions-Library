@@ -97,7 +97,7 @@ end
 
 for i=1:length(filenames)
         img_name = filenames{i};
-        snipout = GetSnippetValues(img_name,{'ImagFreq1'});
+        snipout = GetSnippetValues(img_name,{'ImagFreq1'},'SnippetFolder','R:\Snippet');
         rf{i} = str2double(snipout.value{1});
 end
 end
