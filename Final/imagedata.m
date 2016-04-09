@@ -49,47 +49,46 @@ function [ data, rawdata ] = imagedata( filename, varargin )
 % Last Edits
 %   Parth 2/20/2016 : Version 1.0 finished
 %   Parth 2/26/2016 : Version 1.1 - can read defringed files, added visualization for bad points.
+%   Parth 3/14/2016 : Version 1.1 - Major bug fixed which prevented files from previous day to open.
 
 %% Database of computers
 % WARMING! Pc name MUST be a valid variable name. Use the following code to determine your pc name
 % disp(matlab.lang.makeValidName(char(java.lang.System.getProperty('user.name'))));
 
-% RanchoP
-pcdatabase.RanchoP.master_paths = {'/Users/RanchoP/Dropbox (MIT)/BEC1/Image Data and Cicero Files/Data - Raw Images/'};
-pcdatabase.RanchoP.minor_paths = {'/Users/RanchoP/Desktop';...
-                                  '/Users/RanchoP/Documents';...
-                                  '/Users/RanchoP/Downloads'};
-pcdatabase.RanchoP.snippet_path = '/Users/RanchoP/Dropbox (MIT)/BEC1/Image Data and Cicero Files/Data - Raw Images/Snippet_output';
-
 % Elder
-pcdatabase.Elder.master_paths = {'J:\Elder Backup Raw Images';...
-                                 'C:\Users\Elder\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images'};
+pcdatabase.Elder.master_paths = {'\\18.62.1.253\Raw Data\Images'};
 pcdatabase.Elder.minor_paths = {'C:\Users\Elder\Desktop'};
-pcdatabase.Elder.snippet_path = 'C:\Users\Elder\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images\snippet_output';
+pcdatabase.Elder.snippet_path = '\\18.62.1.253\Raw Data\Snippet';
 
 % BEC1
-pcdatabase.BEC1.master_paths = {'\\Elder-pc\j\Elder Backup Raw Images';...
-                                   'C:\Users\BEC1\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images'};
-pcdatabase.BEC1.minor_paths = {'C:\2016-01';...
-                               'C:\2016-02';...
-                               'C:\Users\BEC1\Desktop'};
-pcdatabase.BEC1.snippet_path = 'C:\Users\BEC1\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images\Snippet_output';
+pcdatabase.BEC1.master_paths = {'\\18.62.1.253\Raw Data\Images'};
+pcdatabase.BEC1.minor_paths = {'C:\2016-01'};
+pcdatabase.BEC1.snippet_path = '\\18.62.1.253\Raw Data\Snippet';
 
 % BEC1Top
-pcdatabase.BEC1Top.master_paths = {'\\Elder-pc\j\Elder Backup Raw Images';...
-                                   'C:\Users\BEC1\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images'};
-pcdatabase.BEC1Top.minor_paths = {'C:\2016\2016-02';...
-                                  'C:\Users\BEC1\Desktop'};
-pcdatabase.BEC1Top.snippet_path = 'C:\Users\BEC1\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images\Snippet_output';
+pcdatabase.BEC1Top.master_paths = {'\\18.62.1.253\Raw Data\Images'};
+pcdatabase.BEC1Top.minor_paths = {'C:\2016\2016-02'};
+pcdatabase.BEC1Top.snippet_path = '\\18.62.1.253\Raw Data\Snippet';
+
+% RanchoP, parth laptop
+pcdatabase.RanchoP.master_paths = {'/Volumes/Raw Data/Images'};
+pcdatabase.RanchoP.minor_paths = {'/Users/RanchoP/Downloads'};
+pcdatabase.RanchoP.snippet_path = '/Volumes/Raw Data/Snippet';
 
 % ParthPatel, home pc
-pcdatabase.ParthPatel.master_paths = {'D:\Dropbox Sync\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images'};
-pcdatabase.ParthPatel.minor_paths = {'C:\Users\Parth Patel\Downloads';...
-                                     'C:\Users\Parth Patel\Documents';...
-                                     'C:\Users\Parth Patel\Desktop'};
-pcdatabase.ParthPatel.snippet_path = 'D:\Dropbox Sync\Dropbox (MIT)\BEC1\Image Data and Cicero Files\Data - Raw Images\Snippet_output';
+pcdatabase.ParthPatel.master_paths = {'\\18.62.1.253\Raw Data\Images'};
+pcdatabase.ParthPatel.minor_paths = {'C:\Users\Parth Patel\Downloads'};
+pcdatabase.ParthPatel.snippet_path = '\\18.62.1.253\Raw Data\Snippet';
 
-% 
+% biswaroopmukherjee
+pcdatabase.biswaroopmukherjee.master_paths = {'/Volumes/Raw Data/Images'};
+pcdatabase.biswaroopmukherjee.minor_paths = {'/Volumes/Raw Data/Images'};
+pcdatabase.biswaroopmukherjee.snippet_path = '/Volumes/Raw Data/Snippet';
+
+%Zhenjie Yan
+pcdatabase.Zhenjie.master_paths = {'/Volumes/Raw Data/Images'};
+pcdatabase.Zhenjie.minor_paths = {'/Volumes/Raw Data/Images'};
+pcdatabase.Zhenjie.snippet_path = '/Volumes/Raw Data/Snippet';
 
 %% Constants, variables and inputs
 % Universal constants
@@ -101,6 +100,7 @@ Nsat = Inf;
 crop_set = {'none',10,10,4,4}; % none or rect or ellipse and [centX, centY, width or radius1, height or radius2]
 bg_set = {'none',10}; % none or avg or linear, width
 plot_set = {0};
+pol_set = {'none',0.05}; % none or sub -- What percent of light is the wrong polarization
 
 % Other Variables
 imagetype = 'unknown'; % 'side_n', 'side_fk_3', 'side_fk_4', 'top', 'unknown'
@@ -116,6 +116,7 @@ for i = 1:2:length(varargin)
         case 'plot', plot_set = varargin{i+1};
         case 'Nsat', Nsat = varargin{i+1};
         case 'bg', bg_set = varargin{i+1};
+        case 'pol', pol_set = varargin{i+1};
     end
 end
 
@@ -135,14 +136,14 @@ filefound = exist(filename,'file');
 % File not yet found and pc is not right
 if ~filefound && ~validpc, error(['PC name ',pcname,' is not in the database. Please add it.']); end
 
-% Find date information
-imdatestr = regexp(filename,'\d\d-\d\d-\d\d\d\d','match');
+% Find date information 07-29-2015_22_00_48.fits
+imdatestr = regexp(filename,'\d\d-\d\d-\d\d\d\d_\d\d_\d\d_\d\d','match');
 imdatenum = datenum(imdatestr,'mm-dd-yyyy');
 subpaths = cell(12,1);
 subpaths{1} = fullfile(datestr(imdatenum,'yyyy'),datestr(imdatenum,'yyyy-mm'),datestr(imdatenum,'yyyy-mm-dd'));
 subpaths{2} = fullfile(datestr(imdatenum-1,'yyyy'),datestr(imdatenum-1,'yyyy-mm'),datestr(imdatenum-1,'yyyy-mm-dd'));
-subpaths{2} = fullfile(datestr(imdatenum-2,'yyyy'),datestr(imdatenum-2,'yyyy-mm'),datestr(imdatenum-2,'yyyy-mm-dd'));
-subpaths{3} = fullfile(datestr(imdatenum+1,'yyyy'),datestr(imdatenum+1,'yyyy-mm'),datestr(imdatenum+1,'yyyy-mm-dd'));
+subpaths{3} = fullfile(datestr(imdatenum-2,'yyyy'),datestr(imdatenum-2,'yyyy-mm'),datestr(imdatenum-2,'yyyy-mm-dd'));
+subpaths{4} = fullfile(datestr(imdatenum+1,'yyyy'),datestr(imdatenum+1,'yyyy-mm'),datestr(imdatenum+1,'yyyy-mm-dd'));
 
 % Search for image on master_paths
 for i = 1:length(pcdatabase.(pcname).master_paths)
@@ -224,6 +225,12 @@ else
     data.woa = rawdata(:,:,1);
 end
 
+% Subtract wrong polarization
+if strcmp(pol_set{1},'sub')
+    data.wa = data.wa - data.woa * pol_set{2};
+    data.woa = data.woa - data.woa * pol_set{2};
+end
+
 % absorption
 data.abs = data.wa ./ data.woa;
 data.abs2 = data.abs;
@@ -260,6 +267,8 @@ switch crop_set{1}
     case 'rect'
         rect = [crop_set{2} - crop_set{4}/2, crop_set{3} - crop_set{5}/2, crop_set{4}, crop_set{5}];
         data.od2 = imcrop(data.od, rect);
+        data.wa2 = imcrop(data.wa, rect);
+        data.woa2 = imcrop(data.woa, rect);
         if strcmp(bg_set{1},'avg')
             rect2 = [rect(1:2) - bg_set{2}, rect(3:4) + 2*bg_set{2}];
             tempod = imcrop(data.od, rect2);
@@ -295,7 +304,7 @@ if plot_set{1} == 1
     range2 = [0,max(max(rawdata(:,:,3)))];
     figure;
     subplot(3,4,[1,5]); imshow(data.abs2,[0,1.2]); set(gca,'YDir','normal'); title('Absorption');
-    subplot(3,4,[2,6]); imshow(data.od,[0,max(data.od(:))]);set(gca,'YDir','normal'); title('OD');
+    subplot(3,4,[2,6]); imshow(data.od,[0,min(max(data.od(:)),2)]);set(gca,'YDir','normal'); title('OD');
     subplot(3,4,9); imshow(data.wa,range1);set(gca,'YDir','normal'); title('With Atoms');
     subplot(3,4,10); imshow(data.woa,range1);set(gca,'YDir','normal'); title('Without Atoms');
     if strcmp(imagetype,'top') || strcmp(imagetype,'side_n') || strcmp(imagetype,'side_fk_3') || strcmp(imagetype,'side_fk_4')
@@ -305,7 +314,7 @@ if plot_set{1} == 1
     if strcmp(crop_set{1},'rect') || strcmp(crop_set{1},'ellipse')
         subplot(3,4,[3,4,7,8]); imshow(data.od2,[0,max(data.od2(:))]);set(gca,'YDir','normal'); title('Cropped OD');
         subplot(3,4,[2,6]); hold on; rectangle('Position', rect, 'EdgeColor','red'); 
-        if strcmp(bg_set{1},'avg'), rectangle('Position', rect2, 'EdgeColor','blue'); end 
+        if strcmp(bg_set{1},'avg'), rectangle('Position', rect2, 'EdgeColor','green'); end 
         hold off;    
     end
     % Drawing bad points
@@ -323,7 +332,9 @@ if plot_set{1} == 1
 end
 
 %% Collecting outputs
-data.croprect = rect;
+if strcmp(bg_set{1},'avg'), data.croprect = rect; end
+data.filename = fname;
+
 
 end
 

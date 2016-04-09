@@ -56,6 +56,7 @@ if n_i(1) == 1
     n_i = linspace(nmin, nmax, bins+1)'; % One additional bin for the end, will be removed later
 end
 P_n = zeros(length(n_i)-1,1);
+P_n_err = zeros(length(n_i)-1,1);
 n_i_edges = n_i - 0.5*(n_i(2) - n_i(1));
 
 whichbin = discretize(nxy_flat, n_i_edges);
@@ -63,6 +64,7 @@ for i = 1:length(P_n)
     binMembers = nxy_flat(whichbin == i);
     if isempty(binMembers), binMembers = 0; end
     P_n(i) = sum(binMembers);
+    P_n_err(i) = std(binMembers);
 end
 n_i = n_i(1:end-1);
 
