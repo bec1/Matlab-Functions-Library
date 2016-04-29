@@ -4,9 +4,7 @@ function [ outp ] = imagedata_list( fnames, varargin )
 % structrued array. Optionally, user can provide the fields to include in
 % the output and settings for imagedata function.
 
-%% Define Variabels and Process Inputs
-
-
+%% Define Variables and Process Inputs
 
 % Defaults for the input
 sample_image = 0; % 0 or 1, image is picked randomly from the list

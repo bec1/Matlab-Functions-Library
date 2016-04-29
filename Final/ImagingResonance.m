@@ -1,11 +1,17 @@
 function [nums,freqs,clouds,imgresfit] = ImagingResonance(images,varargin)
-%% Usage:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% IMAGINGRESONANCE finds the resonance from a sequence of images
+%
+% Usage:
+%
 %   - Input: images: a cell of filenames, without the extension
 %            crop: the usual crop parameters passed to imcrop [x0 y0 w l]
+%
 %   - Output: ImagingResonance(images)
 %       nums = # of atoms, a.u.
 %       freqs = imaging frequencies extracted from the snippet Server
 %       clouds = images loaded
+%
 %%
 switch nargin
     case 1
