@@ -218,3 +218,9 @@ opts.SmoothingParam = 1.2338479537501e-05;
 % hold all
 % plot(bgfitresult)
 end
+
+
+function odout = imgAvg(images)
+    data_out = imagedata_avg(images);
+    odout = data_out.raw_avg;
+end
