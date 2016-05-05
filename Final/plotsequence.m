@@ -1,11 +1,11 @@
-function plotsequence(data,varargin)
+function plotsequence(filenames,varargin)
 %% PLOTSEQUENCE plots a sequence of images with a varied parameter shown in the x axis
 %   Usage:    plotsequence(filenames,'Wait Time')
 %                   where filenames = cell array of filenames
 %                   and   'Wait Time' = string of List-bound variable
 
-%% Find input data type
-if(
+
+clouds = getClouds(filenames);
 
 %% Get the parameter varied and sort
 s = size(clouds);
@@ -17,7 +17,6 @@ switch nargin
 end
 
 %% Get the images
-clouds = getClouds(filenames);
 [params,ix] = sort(params);
 clouds = clouds(:,:,ix);
 
@@ -35,7 +34,7 @@ function clouds = getClouds(filenames)
     if isempty(strfind(filenames{1},'top'))
         cropper = {'rect',110 ,110,200,200};
     else
-        cropper = {'rect',282 ,222,250,250};
+        cropper = {'rect',262 ,252,150,300};
     end
 
 %% Get the data
