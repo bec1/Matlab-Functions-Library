@@ -1,4 +1,4 @@
-function data_out = imgdata_avg(data)
+function data_out = imagedata_avg(data)
 %% IMGDATA_AVG averages a dataset provided in the input data
 
 %% Handle the case where the data hasn't yet been acquired from the folder
