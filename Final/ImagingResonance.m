@@ -41,11 +41,12 @@ grid on
 end
 
 function imgresfit = imagingResFit(freqs,nums)
+    guess_freq = mean(freqs);
     [xData, yData] = prepareCurveData( freqs, nums );
     ft = fittype( 'a+ b/((x-x0)^2+c)', 'independent', 'x', 'dependent', 'y' );
     opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
     opts.Display = 'Off';
-    opts.StartPoint = [0.435698684103899 10000 0.923379642103244 180];
+    opts.StartPoint = [0.435698684103899 10000 0.923379642103244 guess_freq];
 
     % Fit model to data.
     [imgresfit, ~] =  fit( xData, yData, ft, opts );

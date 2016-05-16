@@ -1,4 +1,4 @@
-function output = momentumfocus(momimages,bgimages,refimg,varargin)
+function output = momentumfocus(momimages,bgimages,varargin)
 %% Calculate momentum focused profiles
 % Inputs: momimages: a cell array of T/4 momentum space focused image filenames
 %         bgimages: a cell array of no atoms image filenames for background sub
@@ -22,7 +22,7 @@ function output = momentumfocus(momimages,bgimages,refimg,varargin)
 
 %%
 switch nargin
-    case 3
+    case 2
         sm = 4;
         nbins = 70;
     case 5
@@ -37,10 +37,11 @@ hbar = 1.05e-34;
 
 %% Average images
 momavg = imgAvg(momimages);
+imagesc(momavg)
 bgavg = imgAvg(bgimages);
 
 %% Crop images
-crop = [205,0,150,500];
+crop = [161,0,150,500];
 momcrop = imcrop(momavg,crop); figure(1);subplot(2,2,1); imagesc(momcrop); axis image; axis off
 colormap gray; caxis([-0.1 0.4])
 bgcrop = imcrop(bgavg,crop);
@@ -54,18 +55,11 @@ bgfitresult = bgsmoothfit(bg_profile);
 bg_fit_profile = bgfitresult(1:length(bg_profile));
 bgsub_profile = raw_profile - bg_fit_profile;
 
-%% Correct for changing radius
-OUTP = LoSReconstructionTop(refimg,'cropset',{'rect',crop(1)+round(crop(3)/2),crop(2)+round(crop(4)/2),crop(3),crop(4)});
-areas = OUTP.xsection_area_px;
-output.totalatoms = sum(bgsub_profile);
-pxsize = (13e-4) / 9;
-areas = areas*(pxsize^2);
-volume = areas*pxsize;
-area_cor_profile = bgsub_profile./volume;
-n = area_cor_profile;
+
+n = bgsub_profile;
 
 %% Get kz
-z = pxsize *(1:length(n));
+z = 1.44e-6 *(1:length(n));
 kz = m*omega*z/hbar;
 
 %% Plot n vs kz
@@ -174,8 +168,9 @@ end
 function fitresult = plotnvskz(kz,n)
 %% Plot n vs kz
     figure(1);subplot(2,2,2);
-    n = n/1e9;
-    kz = kz/1e8;
+    %n = n/1e9;
+    n=n/50;
+    kz = kz/1e6;
     plot(kz,n,'.','MarkerSize',10,'DisplayName','data')
 
     [xData, yData] = prepareCurveData( kz, n );
@@ -184,7 +179,7 @@ function fitresult = plotnvskz(kz,n)
     ft = fittype( 'a*log(1+exp(beta*(mu-(x-x0)^2)))+d', 'independent', 'x', 'dependent', 'y' );
     opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
     opts.Display = 'Off';
-    opts.StartPoint = [0.2 2 0 4 5];
+    opts.StartPoint = [0.3 0.4 0 4 5];
 
     % Fit model to data.
     [fitresult, ~] = fit( xData, yData, ft, opts );
@@ -222,5 +217,5 @@ end
 
 function odout = imgAvg(images)
     data_out = imagedata_avg(images);
-    odout = data_out.raw_avg;
+    odout = data_out.od_avg;
 end
