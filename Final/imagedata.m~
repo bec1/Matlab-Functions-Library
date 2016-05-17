@@ -90,7 +90,7 @@ pcdatabase.Zhenjie.master_paths = {'/Volumes/Raw Data/Images'};
 pcdatabase.Zhenjie.minor_paths = {'/Volumes/Raw Data/Images'};
 pcdatabase.Zhenjie.snippet_path = '/Volumes/Raw Data/Snippet';
 
-%Julian
+%J
 pcdatabase.Julian.master_paths = {'/Volumes/Raw Data/Images'};
 pcdatabase.Julian.minor_paths = {'/Volumes/Raw Data/Images'};
 pcdatabase.Julian.snippet_path = '/Volumes/Raw Data/Snippet';
