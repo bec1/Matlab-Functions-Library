@@ -23,7 +23,7 @@ clouds = clouds(:,:,ix);
 %% Plot the sequence
 figure; imagesc(reshape(clouds,size(clouds(:,:,1),1),[],1));
 
-set(gca,'XTick',s(2)*(1:length(params))-s(2)/2,'XTickLabel',num2str(params,'%2.1f\n'),'FontSize',14,'YTick',[]);
+set(gca,'XTick',s(2)*(1:length(params))-s(2)/2,'XTickLabel',num2str(params,'%2.2f\n'),'FontSize',14,'YTick',[]);
 
 axis image
 
@@ -34,7 +34,7 @@ function clouds = getClouds(filenames)
     if isempty(strfind(filenames{1},'top'))
         cropper = {'rect',110 ,110,200,200};
     else
-        cropper = {'rect',262 ,252,150,300};
+        cropper = {'rect',262 ,242,30,60};
     end
 
 %% Get the data

@@ -1,4 +1,4 @@
-function [nums,freqs,clouds,imgresfit] = ImagingResonance(images,varargin)
+function [nums,freqs,clouds,imgresfit] = SlicingResonance(images,freqs)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % IMAGINGRESONANCE finds the resonance from a sequence of images
 %
@@ -17,10 +17,11 @@ function [nums,freqs,clouds,imgresfit] = ImagingResonance(images,varargin)
 images = processPaths(images);
 
 
-clouds = getClouds(images);
-
+clouds = getClouds(images)+.08;
+if iscell(freqs)
+    freqs = cell2mat(freqs);
+end
 nums = getNums(clouds);
-freqs = cell2mat(getFreqs(images));
 
 if range(freqs)==0 
     disp('Please vary the imaging frequency')
@@ -46,7 +47,7 @@ function imgresfit = imagingResFit(freqs,nums)
     ft = fittype( 'a+ b/((x-x0)^2+c)', 'independent', 'x', 'dependent', 'y' );
     opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
     opts.Display = 'Off';
-    opts.StartPoint = [0.435698684103899 10000 0.923379642103244 guess_freq];
+    opts.StartPoint = [7000 -10000 0.923379642103244 guess_freq];
 
     % Fit model to data.
     [imgresfit, ~] =  fit( xData, yData, ft, opts );
@@ -74,9 +75,9 @@ end
 function clouds = getClouds(filenames)
 %% crop depending on side or top image
     if isempty(strfind(filenames{1},'top'))
-        cropper = {'rect',110 ,110,200,200};
+        cropper = {'rect',190 ,190,100,100};
     else
-        cropper = {'rect',272 ,182,150,300};
+        cropper = {'rect',262 ,252,150,300};
     end
 
 %% Get the data
@@ -89,28 +90,5 @@ function clouds = getClouds(filenames)
  
 end
 
-function rf = getFreqs(images)
-
-addpath('C:\Users\BEC1\Documents\GitHub\Data-Explorer-GUI\Snippet-Functions')
-%% Get filenames
-for i=1:length(images)
-    fullpath = images{i};
-    f1 = findstr(fullpath,'/');
-    f2 = findstr(fullpath,'\');
-    f=[f1 f2];
-    if isempty(f)
-        startpoint = 1;
-    else
-        startpoint = 1+max(f);
-    end
-    filenames{i} = fullpath(startpoint:end-5);
-end
-
-for i=1:length(filenames)
-        img_name = filenames{i};
-        snipout = GetSnippetValues(img_name,{'ImagFreq1'},'SnippetFolder','R:\Snippet');
-        rf{i} = str2double(snipout.value{1});
-end
-end
 
 

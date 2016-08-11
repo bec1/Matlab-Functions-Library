@@ -1,4 +1,4 @@
-function [waits,centers,clouds] = sloshing(images)
+function [nums,clouds] = AtomNumberFluctuations(images)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % IMAGINGRESONANCE finds the resonance from a sequence of images
 %
@@ -15,27 +15,18 @@ function [waits,centers,clouds] = sloshing(images)
 %%
 
 images = processPaths(images);
-
-waits = cell2mat(getWaits(images));
-if range(waits)==0 
-    disp('Please vary the waittimes')
-    return
-end
-
 clouds = getClouds(images);
-centers = getCenters(clouds);
+nums = getNums(clouds);
 
-
-% imgresfit = imagingResFit(waits,nums);
-plot(waits,centers,'.','MarkerSize',15)
-xlim([min(waits) max(waits)])
-hold all
+plot(fliplr(nums),'.','MarkerSize',15)
+ylim([0 1.1*max(nums)])
+% hold all
 % ax = plot(imgresfit);
 % set(ax,'DisplayName',strcat('\nu_0 = ',num2str(imgresfit.x0)))
 % xlabel('Frequency [MHz]')
 % ylabel('# [a.u.]')
-% set(gca,'FontSize',14)
-% grid on
+set(gca,'FontSize',14)
+grid on
 
 end
 
@@ -50,19 +41,34 @@ function imgout = processPaths(images)
     imgout = cellfun(@(x) strcat(source,'\',x,'.fits'), images,'UniformOutput',false);
 end
 
+function nums = getNums(clouds)
+    for i=1:size(clouds,3)
+        nums(i) = sum(sum(clouds(:,:,i)));
+    end
+    
+end
+
 
 function clouds = getClouds(filenames)
 %% crop depending on side or top image
-cropper = {'rect',355,1744,700,1000};
+    if isempty(strfind(filenames{1},'top'))
+        cropper = {'rect',111 ,420,150,150};
+    else
+        cropper = {'rect',275 ,243,150,400};
+    end
 
 %% Get the data
  data = imagedata_list(filenames,'crop',cropper);
+ 
  for i=1:length(data)
      clouds(:,:,i) = data(i).od2;
  end
+ 
+ 
 end
 
-function rf = getWaits(images)
+
+function rf = getFreqs(images)
 
 addpath('C:\Users\BEC1\Documents\GitHub\Data-Explorer-GUI\Snippet-Functions')
 %% Get filenames
@@ -81,31 +87,9 @@ end
 
 for i=1:length(filenames)
         img_name = filenames{i};
-        snipout = GetSnippetValues(img_name,{'WaitForSlosh'},'SnippetFolder','R:\Snippet');
+        snipout = GetSnippetValues(img_name,{'Side green evap'},'SnippetFolder','R:\Snippet');
         rf{i} = str2double(snipout.value{1});
 end
-end
-
-
-
-function centers= getCenters(clouds)
-
-for i=1:size(clouds,3)
-    profiles(:,i) = sum(clouds(:,:,i),1);
-    [xData, yData] = prepareCurveData( [], profiles(:,i) );
-
-    % Set up fittype and options.
-    ft = fittype( 'gauss1' );
-    opts = fitoptions( 'Method', 'NonlinearLeastSquares' );
-    opts.Display = 'Off';
-    opts.Lower = [-Inf -Inf 0];
-    opts.StartPoint = [200.748578763351 300 60.9308269036809];
-
-    % Fit model to data.
-    [fitresult, gof] = fit( xData, yData, ft, opts );
-    centers(i) = fitresult.b1;
-end
-
 end
 
 

@@ -1,4 +1,4 @@
-function [nums,freqs,clouds,imgresfit] = ImagingResonance(images,varargin)
+function [nums1,freqs1,nums2,freqs2] = ImagingResonance2Spin(images,varargin)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % IMAGINGRESONANCE finds the resonance from a sequence of images
 %
@@ -14,29 +14,66 @@ function [nums,freqs,clouds,imgresfit] = ImagingResonance(images,varargin)
 %
 %%
 
-images = processPaths(images);
+% Separate the images into the two spin states
+[images1, images2] = separateImages(images);
+
+% % Get the proper paths
+% images1 = processPaths(images1)'
+% images2 = processPaths(images2)'
+
+% Read the clouds
+clouds1 = getClouds(images1);
+clouds2 = getClouds(images2);
+
+% Get the atom numbers
+nums1 = getNums(clouds1);
+nums2 = getNums(clouds2);
+
+% Get the imaging frequencies
+freqs1 = cell2mat(getFreqs(images1));
+freqs2 = cell2mat(getFreqs(images2));
 
 
-clouds = getClouds(images);
-
-nums = getNums(clouds);
-freqs = cell2mat(getFreqs(images));
-
-if range(freqs)==0 
-    disp('Please vary the imaging frequency')
-    return
-end
-
-imgresfit = imagingResFit(freqs,nums);
-plot(freqs,nums,'.','MarkerSize',15)
-xlim([min(freqs) max(freqs)])
+%% Get the resonances
+figure;
+imgresfit1 = imagingResFit(freqs1,nums1);
+plot(freqs1,nums1,'.','MarkerSize',15)
+xlim([min(freqs1)-1 max(freqs1)+1])
 hold all
-ax = plot(imgresfit);
-set(ax,'DisplayName',strcat('\nu_0 = ',num2str(imgresfit.x0)))
+ax = plot(imgresfit1);
+set(ax,'DisplayName',strcat('\nu_0 = ',num2str(imgresfit1.x0)))
 xlabel('Frequency [MHz]')
 ylabel('# [a.u.]')
 set(gca,'FontSize',14)
 grid on
+
+figure;
+imgresfit2 = imagingResFit(freqs2,nums2);
+plot(freqs2,nums2,'.','MarkerSize',15)
+xlim([min(freqs2)-1 max(freqs2)+1])
+hold all
+ax = plot(imgresfit2);
+set(ax,'DisplayName',strcat('\nu_0 = ',num2str(imgresfit2.x0)))
+xlabel('Frequency [MHz]')
+ylabel('# [a.u.]')
+set(gca,'FontSize',14)
+grid on
+
+
+end
+
+function [images1, images2] = separateImages(images)
+
+    k=1; l=1;
+    for i=1:length(images)
+        if ~isempty(strfind(images{i},'TopA'))
+            images1(k) = images(i);
+            k = k+1;
+        elseif ~isempty(strfind(images{i},'TopB'))
+            images2(l) = images(i);
+            l=l+1;
+        end
+    end
 
 end
 
@@ -73,7 +110,9 @@ end
 
 function clouds = getClouds(filenames)
 %% crop depending on side or top image
-    if isempty(strfind(filenames{1},'top'))
+    if ~isempty(strfind(filenames{1},'A'))||~isempty(strfind(filenames{1},'B'))
+        cropper = {'rect',1054,851,200,200};
+    elseif isempty(strfind(filenames{1},'top'))
         cropper = {'rect',110 ,110,200,200};
     else
         cropper = {'rect',272 ,182,150,300};
@@ -108,7 +147,12 @@ end
 
 for i=1:length(filenames)
         img_name = filenames{i};
-        snipout = GetSnippetValues(img_name,{'ImagFreq1'},'SnippetFolder','R:\Snippet');
+        if ~isempty(strfind(images{i},'TopA'))
+            paramname = 'ImagFreq1';
+        elseif ~isempty(strfind(images{i},'TopB'))
+            paramname = 'ImagFreq2';
+        end
+        snipout = GetSnippetValues(img_name,{paramname},'SnippetFolder','R:\Snippet');
         rf{i} = str2double(snipout.value{1});
 end
 end

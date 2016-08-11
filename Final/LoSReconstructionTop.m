@@ -60,9 +60,9 @@ plotset = {0};
 % Inputs
 for i = 1:2:length(varargin)
     switch varargin{i}
-        case 'cropset', cropset = varargin{i+1};
+        case 'crop', cropset = varargin{i+1};
         case 'bgset', bgset = varargin{i+1};
-        case 'Nsat', Nsat = varargim{i+1};
+        case 'Nsat', Nsat = varargin{i+1};
         case 'plot', plotset = varargin{i+1};
         case 'ycuts', ycuts = varargin{i+1};
     end
